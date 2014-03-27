@@ -4,13 +4,13 @@ from numpy import vstack
 from sklearn.neighbors import NearestNeighbors
 
 # calculate lat & lon antipode
-def antipode(lat, lon):
+def antipode(lon, lat):
     newlat = -1*lat
     if lon > 0:
         newlon = lon - 180
     else:
         newlon = lon + 180
-    return (newlat, newlon)
+    return (newlon, newlat)
 
 # see http://www.wunderground.com/about/faq/international_cities.asp
 # for data specs
@@ -20,28 +20,31 @@ stations = read_fwf('data/station_list', header=None,
                          'Lon', 'Elev', 'WMO'])
 locs = stations[['Lon', 'Lat']].values
 
-# project into Alber's Equal Area, centered on antipode of each station
+# project into equirectangular, centered on antipode of each station
 p1 = Proj({'proj':'longlat', 'datum':'WGS84'})
-antipodes = {}
-# for i in range(len(stations)):
-i = 0
-station = stations.iloc[i]
 
-# project antipode
-ant = antipode(station['Lat'], station['Lon'])
-# p2 = Proj({'proj':'aea', 'datum':'WGS84', 'lon_0':ant[1]})
-p2 = Proj({'proj': 'aeqd', 'lat_0': ant[0], 'lon_0': ant[1]})
-ant = transform(p1, p2, ant[1], ant[0])
+# indices of antipodes
+antipodes = []
 
-# project other points
-points = vstack(transform(p1, p2, locs[:,0], locs[:,1])).T
-nbrs = NearestNeighbors(n_neighbors = 5,
-        algorithm='ball_tree').fit(points)
-
-distances, indices = nbrs.kneighbors(ant)
-distances = distances[0]
-indices = indices[0]
-
-ix = indices[distances < 100000]
-if len(ix) > 0:
-    antipodes[i] = ix
+for i in range(len(stations)):
+    print i
+    station = stations.iloc[i]
+    
+    # project antipode
+    ant = antipode(station['Lon'], station['Lat'])
+    p2 = Proj({'proj': 'eqc', 'lon_0': ant[0]})
+    ant = transform(p1, p2, ant[0], ant[1])
+    
+    # project other points
+    points = vstack(transform(p1, p2, locs[:,0], locs[:,1])).T
+    nbrs = NearestNeighbors(n_neighbors = 5,
+            algorithm='ball_tree').fit(points)
+    
+    distances, indices = nbrs.kneighbors(ant)
+    distances = distances[0]
+    indices = indices[0]
+    
+    ixs = indices[distances < 150000]
+    for ix in ixs:
+        if [i, ix] not in antipodes and [ix, i] not in antipodes:
+            antipodes.append([i, ix])
