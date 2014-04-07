@@ -96,5 +96,5 @@ ix = argmin(diffs)
 print '%s: %.1fF' % (antipodes[ix][0], temps[ix][0])
 print '%s: %.1fF' % (antipodes[ix][1], temps[ix][1])
 
-output = dict(zip(antipodes[ix], temps[ix]))
+output = {'locs': antipodes[ix], 'temps': temps[ix]}
 json.dump(output, open('data/antipodes.json', 'w'))
