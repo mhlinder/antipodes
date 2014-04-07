@@ -63,7 +63,7 @@ for pair in antipodes:
 # query api
 from requests import get
 from numpy import abs, argmin, nan
-import pickle
+import pickle, json
 
 # openweathermap.org
 appid = 'aa0bffa7bbd13e7350183cfcfd3c66b38'
@@ -95,3 +95,6 @@ ix = argmin(diffs)
 
 print '%s: %.1fF' % (antipodes[ix][0], temps[ix][0])
 print '%s: %.1fF' % (antipodes[ix][1], temps[ix][1])
+
+output = dict(zip(antipodes[ix], temps[ix]))
+json.dump(output, open('data/antipodes.json', 'w'))
