@@ -68,10 +68,13 @@ import pickle, json
 # openweathermap.org
 appid = 'aa0bffa7bbd13e7350183cfcfd3c66b38'
 responses = {}
-for loc in locs:
+r = get('http://api.openweathermap.org/data/2.5/find?q=%s&mode=json&units=imperial&APPID=%s' % ('lancaster', appid))
+for i, loc in enumerate(locs):
+    print str(i) + " of " + str(len(locs))
     responses[loc] = None
     q = 'http://api.openweathermap.org/data/2.5/find?q=%s&mode=json&units=imperial&APPID=%s' % (loc, appid)
-    r = get(q)
+    while r.text == '' or r.text == 'failed to connect \n':
+        r = get(q)
     responses[loc] = r.json()
 pickle.dump(responses, open('data/responses.p', 'wb'))
 
