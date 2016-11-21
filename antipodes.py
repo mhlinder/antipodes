@@ -1,3 +1,8 @@
+
+from requests import get
+from numpy import abs, argmin, nan
+import pickle, json
+
 # courtesy of http://en.wikipedia.org/wiki/Antipodes#Cities
 
 antipodes = [ ['Christchurch, New Zealand', 'A Coruna, Spain'],
@@ -60,25 +65,20 @@ for pair in antipodes:
         if l not in locs:
             locs.append(l)
 
-# query api
-from requests import get
-from numpy import abs, argmin, nan
-import pickle, json
+# # query api openweathermap.org
+# appid = 'aa0bffa7bbd13e7350183cfcfd3c66b38'
+# responses = {}
+# r = get('http://api.openweathermap.org/data/2.5/find?q=%s&mode=json&units=imperial&APPID=%s' % ('lancaster', appid))
+# for i, loc in enumerate(locs):
+#     print str(i) + " of " + str(len(locs))
+#     responses[loc] = None
+#     q = 'http://api.openweathermap.org/data/2.5/find?q=%s&mode=json&units=imperial&APPID=%s' % (loc, appid)
+#     while r.text == '' or r.text == 'failed to connect \n':
+#         r = get(q)
+#     responses[loc] = r.json()
+# pickle.dump(responses, open('data/responses.p', 'wb'))
 
-# openweathermap.org
-appid = 'aa0bffa7bbd13e7350183cfcfd3c66b38'
-responses = {}
-r = get('http://api.openweathermap.org/data/2.5/find?q=%s&mode=json&units=imperial&APPID=%s' % ('lancaster', appid))
-for i, loc in enumerate(locs):
-    print str(i) + " of " + str(len(locs))
-    responses[loc] = None
-    q = 'http://api.openweathermap.org/data/2.5/find?q=%s&mode=json&units=imperial&APPID=%s' % (loc, appid)
-    while r.text == '' or r.text == 'failed to connect \n':
-        r = get(q)
-    responses[loc] = r.json()
-pickle.dump(responses, open('data/responses.p', 'wb'))
-
-# responses = pickle.load(open('data/responses.p', 'rb'))
+responses = pickle.load(open('data/responses.p', 'rb'))
 
 temps = []
 diffs = []
@@ -96,8 +96,8 @@ for pair in antipodes:
 
 ix = argmin(diffs)
 
-print '%s: %.1fF' % (antipodes[ix][0], temps[ix][0])
-print '%s: %.1fF' % (antipodes[ix][1], temps[ix][1])
+print('%s: %.1fF' % (antipodes[ix][0], temps[ix][0]))
+print('%s: %.1fF' % (antipodes[ix][1], temps[ix][1]))
 
 output = {'locs': antipodes[ix], 'temps': temps[ix]}
 json.dump(output, open('data/antipodes.json', 'w'))
